@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.secret_key = "nandu_2026_secure_random_98as7d9a"
 
 # Connect to MongoDB
-client = MongoClient("mongodb+srv://nandud7967_db_user:bmQJHC59oLWxsdzd@cluster0.mqiwdmb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+client = MongoClient(os.environ.get("MONGO_URI"))
 db = client["cable_db"]
 
 customers = db["customers"]
