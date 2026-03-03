@@ -271,57 +271,29 @@ def monthly_summary():
     )
 
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if not session.get('admin'):
-        return redirect('/login')
+    if not session.get("logged_in"):
+        return redirect("/login")
 
-    from datetime import datetime
-    now = datetime.now()
-    year = now.year
-    current_month = now.strftime("%B")
+    total_customers = collection.count_documents({})
 
-    total_customers = customers.count_documents({})
-
-    paid_count = 0
-    unpaid_count = 0
-    balance_count = 0
+    paid_customers = collection.count_documents({"status": "Paid"})
+    not_paid_customers = collection.count_documents({"status": "Not Paid"})
+    balance_customers = collection.count_documents({"status": "Balance"})
 
     total_collected = 0
-    total_balance_amount = 0
-
-    for customer in customers.find():
-
-        record = payments.find_one({
-            "card_number": customer["card_number"],
-            "year": year,
-            "month": current_month
-        })
-
-        if record:
-            if record["status"] == "Paid":
-                paid_count += 1
-                total_collected += record["paid_amount"]
-
-            elif record["status"] == "Balance":
-                balance_count += 1
-                total_collected += record["paid_amount"]
-                total_balance_amount += record["balance"]
-
-        else:
-            unpaid_count += 1
-            total_balance_amount += customer["monthly_amount"]
+    paid_records = collection.find({"status": "Paid"})
+    for record in paid_records:
+        total_collected += record.get("monthly_amount", 0)
 
     return render_template(
         "dashboard.html",
         total_customers=total_customers,
-        paid_count=paid_count,
-        unpaid_count=unpaid_count,
-        balance_count=balance_count,
-        total_collected=total_collected,
-        total_balance_amount=total_balance_amount,
-        month=current_month,
-        year=year
+        paid_customers=paid_customers,
+        not_paid_customers=not_paid_customers,
+        balance_customers=balance_customers,
+        total_collected=total_collected
     )
 
 
