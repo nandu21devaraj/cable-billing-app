@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: cable-billing-app
+    env: python
+    buildCommand: ""
+    startCommand: "gunicorn app.py"
