@@ -59,6 +59,11 @@
                         </a>
                     {% else %}
                         <span class="text-muted">Completed</span>
+                        <br>
+                        <a href="/receipt/{{ customer.card_number }}/{{ p.month }}" 
+                            class="btn btn-success btn-sm" target="_blank">
+                            🧾 Receipt
+                        </a>
                     {% endif %}
                 </td>
 

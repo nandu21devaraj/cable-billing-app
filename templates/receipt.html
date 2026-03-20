@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt</title>
+
+    <style>
+        body {
+            font-family: Arial;
+        }
+
+        .bill {
+            width: 400px;
+            border: 4px solid #000;
+            padding: 12px;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .number {
+            color: red;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .field {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .line {
+            border-bottom: 1px dotted #000;
+            display: inline-block;
+            width: 200px;
+        }
+
+        .print-btn {
+            margin-top: 15px;
+        }
+
+        @media print {
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="bill">
+
+    <div class="top">
+        <div>
+            <div style="font-size:18px;font-weight:bold;">
+                ನಂದು ಕೇಬಲ್ ನೆಟ್ವರ್ಕ್
+            </div>
+            <div style="font-size:12px;">
+                Cable TV Network
+            </div>
+        </div>
+
+        <div class="number">
+            {{ bill_number }}
+        </div>
+    </div>
+
+    <div class="field">
+        ದಿನಾಂಕ: {{ date }}
+    </div>
+
+    <div class="field">
+        ಕಾರ್ಡ್ ನಂ: <span class="line">{{ customer.card_number }}</span>
+    </div>
+
+    <div class="field">
+        STB No: <span class="line">{{ customer.stb_number }}</span>
+    </div>
+
+    <div class="field">
+        ತಿಂಗಳು: <span class="line">{{ month }} {{ year }}</span>
+    </div>
+
+    <div class="field">
+        ಪಾವತಿ: ₹{{ payment.paid_amount }}
+    </div>
+
+    <div class="field">
+        ಬಾಕಿ: ₹{{ payment.balance }}
+    </div>
+
+    <div class="field">
+        ಸ್ಥಿತಿ: {{ payment.status }}
+    </div>
+
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨 Print</button>
+
+</body>
+</html>

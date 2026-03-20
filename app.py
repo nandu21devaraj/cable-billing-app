@@ -3,9 +3,19 @@ from flask import Flask
 from pymongo import MongoClient
 from datetime import datetime
 import os
+import uuid
+import hashlib
+def generate_bill_number(card_number, month):
+    raw = f"{card_number}-{month}-{datetime.now()}"
+    hash_val = hashlib.sha256(raw.encode()).hexdigest()
+
+    return str(int(hash_val[:10], 16))[:6]
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-123")
 
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "999666")
 # 🔥 ADD THESE LINES
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
@@ -34,9 +44,9 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        password = request.form('password')
+        password = request.form.get('password')
 
-        if password and password.strip() == "admin123":
+        if password and password.strip() == ADMIN_PASSWORD:
             session['admin'] = True
             return redirect('/dashboard')
         
@@ -212,6 +222,35 @@ def pay_month(card_number, month):
         customer=customer,
         month=month,
         year=year
+    )
+
+@app.route("/receipt/<card_number>/<month>")
+def receipt(card_number, month):
+    if not session.get('admin'):
+        return redirect('/login')
+
+    year = 2026
+
+    customer = customers.find_one({"card_number": card_number})
+    payment = payments.find_one({
+        "card_number": card_number,
+        "year": year,
+        "month": month
+    })
+
+    if not payment:
+        return "No payment found"
+
+    bill_number = generate_bill_number(card_number, month)
+
+    return render_template(
+        "receipt.html",
+        customer=customer,
+        payment=payment,
+        month=month,
+        year=year,
+        date=datetime.now().strftime("%d-%m-%Y"),
+        bill_number=bill_number
     )
 
 
