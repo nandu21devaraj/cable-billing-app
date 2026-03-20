@@ -141,13 +141,6 @@ def payments_page(card_number):
         })
 
         if record:
-            if record["status"] == "Paid":
-                status_text = "Paid"
-            elif record["status"] == "Balance":
-                status_text = f"Balance ₹{record['balance']}"
-            else:
-                status_text = "Not Paid"
-
             payment_records.append({
                 "month": month,
                 "status": record["status"],

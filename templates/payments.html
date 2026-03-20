@@ -45,6 +45,10 @@
                         <span class="badge bg-warning text-dark">
                             ⚠ Balance ₹{{ p.balance }}
                         </span>
+                    {% elif p.status == "Not Paid" %}
+                        <span class="badge bg-danger">
+                            ❌ Not Paid (₹{{ p.balance }})
+                        </span>
 
                     {% else %}
                         <span class="badge bg-danger">❌ Not Paid</span>
