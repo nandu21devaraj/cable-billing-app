@@ -2,6 +2,10 @@ from flask import render_template, request, redirect, session
 from flask import Flask
 from pymongo import MongoClient
 from datetime import datetime
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from flask import send_file
 import os
 import uuid
 import hashlib
@@ -172,6 +176,8 @@ def pay_month(card_number, month):
     if request.method == 'POST':
         paid_amount_input = int(request.form['paid_amount'])
         monthly_amount = customer['monthly_amount']
+        bill_number = generate_bill_number(card_number, month)
+
 
         existing = payments.find_one({
             "card_number": card_number,
@@ -194,7 +200,10 @@ def pay_month(card_number, month):
             status = "Paid"
         else:
             status = "Balance"
-
+        if existing and existing.get("bill_number"):
+            bill_number = existing["bill_number"]   # keep same bill number
+        else:
+            bill_number = generate_bill_number(card_number, month)
         payments.update_one(
             {
                 "card_number": card_number,
@@ -206,7 +215,11 @@ def pay_month(card_number, month):
                     "paid_amount": paid_amount,
                     "monthly_amount": monthly_amount,
                     "balance": balance,
-                    "status": status
+                    "status": status,
+                    "bill_number": bill_number,   # 🔥 ADD THIS
+                    "card_number": card_number,
+                    "month": month,
+                    "year": year
                 }
             },
             upsert=True
@@ -249,6 +262,90 @@ def receipt(card_number, month):
         date=datetime.now().strftime("%d-%m-%Y"),
         bill_number=bill_number
     )
+
+
+@app.route("/download-pdf/<card_number>/<month>")
+def download_pdf(card_number, month):
+    if not session.get('admin'):
+        return redirect('/login')
+
+    year = 2026
+
+    customer = customers.find_one({"card_number": card_number})
+    payment = payments.find_one({
+        "card_number": card_number,
+        "year": year,
+        "month": month
+    })
+
+    if not payment:
+        return "No payment found"
+
+    bill_number = payment.get("bill_number", "000000")
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+    styles = getSampleStyleSheet()
+
+    content = []
+
+    content.append(Paragraph("Nandu Cable Network", styles['Title']))
+    content.append(Spacer(1, 10))
+
+    content.append(Paragraph(f"Bill No: {bill_number}", styles['Normal']))
+    content.append(Paragraph(f"Date: {datetime.now().strftime('%d-%m-%Y')}", styles['Normal']))
+    content.append(Spacer(1, 10))
+
+    content.append(Paragraph(f"Card Number: {customer['card_number']}", styles['Normal']))
+    content.append(Paragraph(f"STB Number: {customer['stb_number']}", styles['Normal']))
+    content.append(Spacer(1, 10))
+
+    content.append(Paragraph(f"Month: {month} {year}", styles['Normal']))
+    content.append(Paragraph(f"Paid Amount: ₹{payment['paid_amount']}", styles['Normal']))
+    content.append(Paragraph(f"Balance: ₹{payment['balance']}", styles['Normal']))
+    content.append(Paragraph(f"Status: {payment['status']}", styles['Normal']))
+
+    doc.build(content)
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"receipt_{bill_number}.pdf",
+        mimetype='application/pdf'
+    )
+
+
+@app.route("/search-bill", methods=["GET", "POST"])
+def search_bill():
+    if not session.get('admin'):
+        return redirect('/login')
+
+    if request.method == "POST":
+        bill_no = request.form['bill_number']
+
+        payment = payments.find_one({"bill_number": bill_no})
+
+        if payment:
+            customer = customers.find_one({
+                "card_number": payment["card_number"]
+            })
+
+            return render_template(
+                "receipt.html",
+                customer=customer,
+                payment=payment,
+                month=payment["month"],
+                year=payment["year"],
+                date=datetime.now().strftime("%d-%m-%Y"),
+                bill_number=bill_no
+            )
+        else:
+            return render_template("search.html", error="❌ Invalid Bill Number")
+
+    return render_template("search.html")
 
 
 @app.route('/monthly-summary')
