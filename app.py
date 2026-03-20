@@ -150,12 +150,14 @@ def payments_page(card_number):
 
             payment_records.append({
                 "month": month,
-                "status": status_text
+                "status": record["status"],
+                "balance": record.get("balance", 0)
             })
         else:
             payment_records.append({
                 "month": month,
-                "status": "Not Paid"
+                "status": "Not Paid",
+                "balance": customer["monthly_amount"]
             })
     return render_template(
         "payments.html",
@@ -184,17 +186,19 @@ def pay_month(card_number, month):
             "month": month
         })
 
-        if existing:
-            previous_paid = existing.get("paid_amount", 0)
-            paid_amount = previous_paid + paid_amount_input
-        else:
-            paid_amount = paid_amount_input
+        previous_paid = existing.get("paid_amount", 0) if existing else 0
 
+        remaining_amount = monthly_amount - previous_paid
+
+        # ❌ BLOCK OVERPAYMENT
+        if paid_amount_input > remaining_amount:
+            return f"❌ You can only pay ₹{remaining_amount}"
+
+        paid_amount = previous_paid + paid_amount_input
         balance = monthly_amount - paid_amount
 
-        if balance <= 0:
+        if balance == 0:
             status = "Paid"
-            balance = 0
         else:
             status = "Balance"
 
