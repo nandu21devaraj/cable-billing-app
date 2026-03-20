@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 app = Flask(__name__)
-app.secret_key = "nandu_2026_secure_random_98as7d9a"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-123")
 
 # Connect to MongoDB
 client = MongoClient(os.environ.get("MONGO_URI"))
@@ -273,19 +273,19 @@ def monthly_summary():
 
 @app.route("/dashboard")
 def dashboard():
-    if not session.get("logged_in"):
+    if not session.get("admin"):
         return redirect("/login")
 
-    total_customers = collection.count_documents({})
+    total_customers = customers.count_documents({})
 
-    paid_customers = collection.count_documents({"status": "Paid"})
-    not_paid_customers = collection.count_documents({"status": "Not Paid"})
-    balance_customers = collection.count_documents({"status": "Balance"})
+    paid_customers = payments.count_documents({"status": "Paid"})
+    not_paid_customers = payments.count_documents({"status": "Not Paid"})
+    balance_customers = payments.count_documents({"status": "Balance"})
 
     total_collected = 0
-    paid_records = collection.find({"status": "Paid"})
+    paid_records = payments.find({"status": "Paid"})
     for record in paid_records:
-        total_collected += record.get("monthly_amount", 0)
+        total_collected += record.get("paid_amount", 0)
 
     return render_template(
         "dashboard.html",
@@ -298,8 +298,6 @@ def dashboard():
 
 
 
-import os
 
 if __name__ == "__main__":
-    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-123")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
