@@ -38,7 +38,7 @@
                 <td>{{ p.month }}</td>
 
                 <td>
-                    {% if p.status == "Paid" %}
+                    {% if p.status|lower == "paid" %}
                         <span class="badge bg-success">✔ Paid</span>
 
                     {% elif p.status == "Balance" %}
@@ -56,7 +56,7 @@
                 </td>
 
                 <td>
-                    {% if p.status != "Paid" %}
+                    {% if p.status|lower != "paid" %}
                         <a href="/pay/{{ customer.card_number }}/{{ p.month }}"
                            class="btn btn-sm btn-primary">
                             Pay
