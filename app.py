@@ -6,6 +6,9 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-123")
 
+# 🔥 ADD THESE LINES
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 # Connect to MongoDB
 client = MongoClient(os.environ.get("MONGO_URI"))
 db = client["cable_db"]
@@ -31,14 +34,13 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        password = request.form['password']
+        password = request.form('password')
 
-        if password == "admin123":
+        if password and password.strip() == "admin123":
             session['admin'] = True
             return redirect('/dashboard')
-        else:
-            return render_template('login.html', error="Wrong Password")
-
+        
+        
     return render_template('login.html')
 
 
