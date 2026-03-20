@@ -9,7 +9,7 @@
         }
 
         .bill {
-            width: 400px;
+            width: 420px;
             border: 4px solid #000;
             padding: 12px;
         }
@@ -20,28 +20,42 @@
             align-items: center;
         }
 
+        .logo {
+            font-size: 40px;
+        }
+
         .title {
-            font-size: 20px;
+            text-align: center;
             font-weight: bold;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
+            font-size: 22px;
+        }
+
+        .sub {
+            text-align: center;
+            font-size: 13px;
         }
 
         .number {
             color: red;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
         }
 
         .field {
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 14px;
         }
 
         .line {
             border-bottom: 1px dotted #000;
             display: inline-block;
-            width: 200px;
+            width: 220px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 22px;
         }
 
         .print-btn {
@@ -60,21 +74,24 @@
 
 <div class="bill">
 
+    <!-- TOP SECTION -->
     <div class="top">
+        <div class="logo">📡</div>
+
         <div>
-            <div style="font-size:18px;font-weight:bold;">
-                ನಂದು ಕೇಬಲ್ ನೆಟ್ವರ್ಕ್
-            </div>
-            <div style="font-size:12px;">
-                Cable TV Network
-            </div>
+            <div class="title">ನಂದು ಕೇಬಲ್ ನೆಟ್ವರ್ಕ್</div>
+            <div class="sub">Cable TV Network</div>
         </div>
 
-        <div class="number">
-            {{ bill_number }}
-        </div>
+        <div class="number">{{ bill_number }}</div>
     </div>
 
+    <!-- CONTACT -->
+    <div class="field">
+        📞 9448264618, 9141464588
+    </div>
+
+    <!-- DETAILS -->
     <div class="field">
         ದಿನಾಂಕ: {{ date }}
     </div>
@@ -101,6 +118,11 @@
 
     <div class="field">
         ಸ್ಥಿತಿ: {{ payment.status }}
+    </div>
+
+    <!-- TEMPLE ICON -->
+    <div class="footer">
+        🛕
     </div>
 
 </div>
