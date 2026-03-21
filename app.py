@@ -251,7 +251,8 @@ def receipt(card_number, month):
     if not payment:
         return "No payment found"
 
-    bill_number = payment.get("bill_number", "000000")
+    bill_print = payment.get("bill_number", "")
+
     print(payment)
     return render_template(
         "receipt.html",
@@ -260,7 +261,7 @@ def receipt(card_number, month):
         month=month,
         year=year,
         date=datetime.now().strftime("%d-%m-%Y"),
-        bill_number=bill_number
+        bill_print=bill_print
     )
 
 
@@ -284,8 +285,7 @@ def download_pdf(card_number, month):
         return "No payment found"
 
     # ✅ USE STORED BILL NUMBER
-    bill_number = payment.get("bill_number", "000000")
-
+    bill_print = payment.get("bill_number", "")
     # ✅ Render SAME receipt HTML
     rendered = render_template(
         "receipt.html",
@@ -294,7 +294,7 @@ def download_pdf(card_number, month):
         month=month,
         year=year,
         date=datetime.now().strftime("%d-%m-%Y"),
-        bill_number=bill_number
+        bill_print=bill_print
     )
 
     # ✅ Convert to PDF (KEEP DESIGN)
