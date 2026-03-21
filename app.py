@@ -11,7 +11,7 @@ import os
 import uuid
 import hashlib
 def generate_bill_number(card_number, month):
-    raw = f"{card_number}-{month}-{datetime.now()}"
+    raw = f"{card_number}-{month}"
     hash_val = hashlib.sha256(raw.encode()).hexdigest()
 
     return str(int(hash_val[:10], 16))[:6]
@@ -198,12 +198,14 @@ def pay_month(card_number, month):
         
         if balance == 0:
             status = "Paid"
+
+            if not existing or not existing.get("bill_number"):
+                bill_number = generate_bill_number(card_number, month)
+            else:
+                bill_number = existing["bill_number"]
         else:
             status = "Balance"
-        if existing and existing.get("bill_number"):
-            bill_number = existing["bill_number"]   # keep same bill number
-        else:
-            bill_number = generate_bill_number(card_number, month)
+            bill_number = existing.get("bill_number") if existing else None
         payments.update_one(
             {
                 "card_number": card_number,
@@ -217,9 +219,7 @@ def pay_month(card_number, month):
                     "balance": balance,
                     "status": status,
                     "bill_number": bill_number,   # 🔥 ADD THIS
-                    "card_number": card_number,
-                    "month": month,
-                    "year": year
+
                 }
             },
             upsert=True
@@ -252,6 +252,7 @@ def receipt(card_number, month):
         return "No payment found"
 
     bill_number = payment.get("bill_number", "000000")
+    print(payment)
     return render_template(
         "receipt.html",
         customer=customer,
