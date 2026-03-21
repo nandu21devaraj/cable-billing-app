@@ -177,7 +177,10 @@ def pay_month(card_number, month):
     if request.method == 'POST':
         paid_amount_input = int(request.form['paid_amount'])
         monthly_amount = customer['monthly_amount']
-        bill_number = generate_bill_number(card_number, month)
+        if existing and existing.get("bill_number"):
+            bill_number = existing["bill_number"]   # reuse old
+        else:
+            bill_number = generate_bill_number(card_number, month)
 
 
         existing = payments.find_one({
@@ -300,8 +303,29 @@ def download_pdf(card_number, month):
     # ✅ Convert to PDF (KEEP DESIGN)
     pdf = HTML(string=rendered).write_pdf(
         stylesheets=[CSS(string="""
-            body { font-family: Arial; }
-            .bill { width: 380px; border: 3px solid black; padding: 10px; }
+            @page {
+                size: A4;
+                margin: 20px;
+            }
+
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                font-family: Arial;
+            }
+
+            .bill {
+                width: 420px;
+                border: 4px solid black;
+                padding: 12px;
+            }
+
+            .number {
+                color: red;
+                font-size: 32px;
+                font-weight: bold;
+            }
         """)]
     )
 
