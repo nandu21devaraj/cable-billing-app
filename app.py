@@ -177,11 +177,6 @@ def pay_month(card_number, month):
     if request.method == 'POST':
         paid_amount_input = int(request.form['paid_amount'])
         monthly_amount = customer['monthly_amount']
-        if existing and existing.get("bill_number"):
-            bill_number = existing["bill_number"]   # reuse old
-        else:
-            bill_number = generate_bill_number(card_number, month)
-
 
         existing = payments.find_one({
             "card_number": card_number,
@@ -198,8 +193,9 @@ def pay_month(card_number, month):
             return f"❌ You can only pay ₹{remaining_amount}"
 
         paid_amount = previous_paid + paid_amount_input
-        balance = monthly_amount - paid_amount
+        balance = monthly_amount - paid_amount   
 
+        
         if balance == 0:
             status = "Paid"
         else:
